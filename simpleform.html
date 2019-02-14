@@ -1,4 +1,4 @@
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>CRUD Application</title>
@@ -45,7 +45,6 @@ function getCountries() {
 
     countries = JSON.parse(this.responseText);
     FetchAll();
-
   }
 };
 xmlhttp.open("GET", "/todos", true);
@@ -69,8 +68,6 @@ addNewCountry = function () {
     xmlhttp.send(data);
   };
 
-
-
 Count = function(data) {
     var el   = document.getElementById('counter');
     var name = 'country';
@@ -86,38 +83,48 @@ Count = function(data) {
 Edit = function (item) {
     var el = document.getElementById('edit-name');
     // Display value in the field
-    el.value = countries[item];
+    el.value = countries[item]['country_name'];
+    let id = countries[item]['id'];
     // Display fields
     document.getElementById('spoiler').style.display = 'block';
     //self = this;
     document.getElementById('saveEdit').onsubmit = function() {
       // Get value
       var country = el.value;
-      if (country) {
-        // Edit value
-        countries.splice(item, 1, country.trim());
-        // Display the new list
-        FetchAll();
-        // Hide fields
+      var xmlhttp = new XMLHttpRequest();
+      xmlhttp.onreadystatechange = function() {
+      if(this.readyState == 4 && this.status == 200) {
+        getCountries();
         CloseInput();
       }
     }
+    xmlhttp.open("PUT", "/todos", true)
+    xmlhttp.setRequestHeader("Content-Type", "application/json");
+    var data = JSON.stringify({"id": id, "country_name": country});
+    xmlhttp.send(data);
+    }
   };
-  Delete = function (item) {
-    // Delete the current row
-    countries.splice(item, 1);
-    // Display the new list
-   FetchAll();
+Delete = function (id) {
+    var xmlhttp;
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+   if (this.readyState == 4 && this.status == 200) {
+      getCountries();
+    }
+}
+    xmlhttp.open("DELETE", "/todos/" + countries[id]['id'], true);
+    xmlhttp.setRequestHeader("Content-Type", "application/json");
+    xmlhttp.send()
   };
-  FetchAll = function()
+FetchAll = function()
    {
     var data = '';
     if (countries.length > 0) {
       for (i = 0; i < countries.length; i++) {
         data += '<tr>';
         data += '<td>' + countries[i]['country_name'] + '</td>';
-        data += '<td><button onclick="Edit(' + countries[i]['id'] + ')">Edit</button></td>';
-        data += '<td><button onclick="Delete(' + countries[i]['id'] + ')">Delete</button></td>';
+        data += '<td><button onclick="Edit(' + i + ')">Edit</button></td>';
+        data += '<td><button onclick="Delete(' + i + ')">Delete</button></td>';
         data += '</tr>';
       }
     }
